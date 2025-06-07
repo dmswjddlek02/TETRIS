@@ -28,8 +28,6 @@
 #define	T_BLOCK 1
 #define S_BLOCK 2
 #define Z_BLOCK 3
-
-
 #define L_BLOCK 4
 #define J_BLOCK 5
 #define O_BLOCK 6
@@ -112,7 +110,7 @@ char j_block[4][4][4] =
 char o_block[4][4][4] =
 	{
 			{{1, 1, 0, 0},   {1, 1, 0, 0},   {0, 0, 0, 0},   {0, 0, 0, 0}},
-			{{1, 1, 1, 0},   {1, 1, 0, 0},   {0, 0, 0, 0},   {0, 0, 0, 0}},
+			{{1, 1, 0, 0},   {1, 1, 0, 0},   {0, 0, 0, 0},   {0, 0, 0, 0}},
 			{{1, 1, 0, 0},   {1, 1, 0, 0},   {0, 0, 0, 0},   {0, 0, 0, 0}},
 			{{1, 1, 0, 0},   {1, 1, 0, 0},   {0, 0, 0, 0},   {0, 0, 0, 0}}
 
@@ -123,11 +121,32 @@ char o_block[4][4][4] =
  * 2차원 배열의 2차원 배열
  * 모든 블록의 모양을 표시
  *
- * 20*8 배열
+ * 20*8 배열 (20*10배열 아닌가..?)
  * 모든 블록의 모양을 표시
  * 모든 블록의 모양을 표시*/
 
-char tetris_table[21][10];
+char tetris_table[20][10]={
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
 
 /* 게임 종료 땨마다
  * 이름과 득점수와 
@@ -197,7 +216,102 @@ int display_menu(void)
 	return 0;
 }
 
+/*블록 세팅*/
+void draw_block(int choice, int color_code) {
+    if(choice==0) printf("\033[%dm \033[0m", color_code);  // 꽉 찬 블록 (백그라운드 컬러 채우기)
+	if(choice==1) printf("\033[%dm\u2588\033[0m", color_code);  // 세로 컬러 블록
+	if(choice==2) printf("\033[%dm\u2591\033[0m", color_code);  // 세로 반투명 블록
+	if(choice==3) printf("\033[%dm\u25A0\033[0m", color_code);  // 네모 블록
+}
 
+/*블록 생성*/
+void new_block(){
+	srand(time(NULL)); // 난수 초기화
+	int num = rand() % 7;
+	if(num == I_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(i_block[0][i][j]==1)draw_block(3,31);
+				if(i_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == T_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(t_block[0][i][j]==1)draw_block(3,33);
+				if(t_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == S_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(s_block[0][i][j]==1)draw_block(3,34);
+				if(s_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == Z_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(z_block[0][i][j]==1)draw_block(3,36);
+				if(z_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == L_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(l_block[0][i][j]==1)draw_block(3,35);
+				if(l_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == J_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(j_block[0][i][j]==1)draw_block(3,35);
+				if(j_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+	if(num == O_BLOCK){
+		for(int i=0;i<4;i++){
+			for(int j=0;j<4;j++){
+				if(o_block[0][i][j]==1)draw_block(3,32);
+				if(o_block[0][i][j]==0)draw_block(3, 30);
+			}
+			printf("\n");
+		}
+	}
+}
+
+/* 게임 화면*/
+int game_start(void){
+	new_block();
+	//while(1)
+//	{
+
+		system("clear");
+		printf("\n");
+		for(int i=0; i<20; i++){
+			for(int j=0; j<10; j++){
+				if(tetris_table[i][j] == 0) draw_block(3, 30);
+				if(tetris_table[i][j] == 1) draw_block(3, 37);
+			}
+			printf("\n");
+		}
+		
+//	}
+	return 0;
+}
 
 /// 테트리스 게임 메인 함수
 /// 메뉴를 표시하고 사용자의 선택에 따라 게임을 시작하거나 결과를 검색하거나 종료합니다.
@@ -218,11 +332,11 @@ int main(void)
 		}
 		else if(menu == 2)
 		{
-			search_result();
+			//search_result();
 		}
 		else if(menu == 3)
 		{
-			print_result();
+			//print_result();
 		}
 		else if(menu == 4)
 		{
