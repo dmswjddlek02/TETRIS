@@ -225,9 +225,7 @@ void draw_block(int choice, int color_code) {
 }
 
 /*블록 생성*/
-void new_block(){
-	srand(time(NULL)); // 난수 초기화
-	int num = rand() % 7;
+void new_block(int num){
 	if(num == I_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
@@ -295,11 +293,12 @@ void new_block(){
 
 /* 게임 화면*/
 int game_start(void){
-	new_block();
+	srand(time(NULL)); // 난수 초기화
+	int randum = rand() % 7;
 	//while(1)
 //	{
-
 		system("clear");
+		new_block(randum);
 		printf("\n");
 		for(int i=0; i<20; i++){
 			for(int j=0; j<10; j++){
