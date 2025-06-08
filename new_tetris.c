@@ -181,6 +181,38 @@ int best_point = 0; /* 최고 점수*/
 
 long point = 0; /* 현재 점수*/
 
+/*터미널 모드 설정*/
+struct termios original_termios;
+
+void set_input_mode() {
+	struct termios new_termios;
+	tcgetattr(STDIN_FILENO, &original_termios);
+	new_termios = original_termios;
+	new_termios.c_lflag &= ~(ICANON | ECHO);  // 비정규 모드 + 에코 제거
+	tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+}
+
+void reset_input_mode() {
+	tcsetattr(STDIN_FILENO, TCSANOW, &original_termios);
+}
+
+// 키 입력 여부 확인
+int key_pressed() {
+	struct timeval tv = {0L, 0L};
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds);
+	return select(1, &fds, NULL, NULL, &tv);
+}
+
+// 키 하나 읽기
+char read_key() {
+	char ch;
+	if (read(STDIN_FILENO, &ch, 1) > 0)
+		return ch;
+	return 0;
+}
+
 
 int display_menu(void); /* 메뉴 표시*/
 
@@ -188,8 +220,10 @@ int display_menu(void); /* 메뉴 표시*/
 /* 메뉴 표시*/
 int display_menu(void)
 {
-	// 
+
 	int menu = 0;
+    reset_input_mode();
+    int ch = 0;
 
 	while(1)
 	{
@@ -204,17 +238,14 @@ int display_menu(void)
 		printf("\n\t\t\t   4) QUIT");
 		printf("\n\t\t\t============================");
 		printf("\n\t\t\t\t\t SELECT : ");
-		scanf("%d",&menu);
-		if(menu < 1 || menu > 4)
-		{
-			continue;
-		}
-		else
-		{
-			return menu;
+		ch = getchar();
+		if (ch >= '1' && ch <= '4') {
+			break;
 		}
 	}
-	return 0;
+
+	set_input_mode();  // 다시 비정규 모드
+	return ch - '0';
 }
 
 int check_collision(char block[4][4], int x, int y) {
@@ -228,6 +259,7 @@ int check_collision(char block[4][4], int x, int y) {
 
 /*게임 실행 화면*/
 int game_start(void){
+    
     srand(time(NULL));
 	int randum = rand() % 7 + 1;
     char (*block)[4][4];
@@ -242,18 +274,53 @@ int game_start(void){
         case O_BLOCK: block = o_block; break;
     }
 
-	int rotation = 0;
 	x = 4;
 	y = 0;
 
+
 	while (1) {
+
+        if (key_pressed()) {
+	        char ch = read_key();
+	        if (ch == 'i' || ch == 'I') {
+		        int next_rotation = (block_state + 1) % 4;
+		        if (!check_collision(block[next_rotation], x, y)) {
+			        block_state = next_rotation;
+		        }
+	        }
+	    else if (ch == 'j' || ch == 'J') {
+		    if (!check_collision(block[block_state], x - 1, y)) {
+			    x--;
+		    }
+	    }
+	    else if (ch == 'l' || ch == 'L') {
+		    if (!check_collision(block[block_state], x + 1, y)) {
+			    x++;
+		    }
+	    }
+	    else if (ch == 'k' || ch == 'K') {
+		    if (!check_collision(block[block_state], x, y + 1)) {
+			    y++;
+		    }
+	    }
+	    else if (ch == 'a' || ch == 'A') {
+		    while (!check_collision(block[block_state], x, y + 1)) {
+			    y++;
+		    }
+	    }
+	    else if (ch == 'p' || ch == 'P') {
+		    printf("게임을 종료합니다.\n");
+		    exit(0);
+	    }
+    }
+
 		system("clear");
 
 		// 블럭 + 배경 출력
 		for (int i = 0; i < 20; i++) {
 			for (int j = 0; j < 10; j++) {
-				if (i >= y && i < y + 4 && j >= x && j < x + 4 && block[rotation][i - y][j - x] != 0) {
-					printf("%d", block[rotation][i - y][j - x]);
+				if (i >= y && i < y + 4 && j >= x && j < x + 4 && block[block_state][i - y][j - x] != 0) {
+					printf("%d", block[block_state][i - y][j - x]);
 				} 
                 else {
 					printf("%d", tetris_table[i][j]);
@@ -265,13 +332,13 @@ int game_start(void){
 		usleep(500000); // 0.5초마다 낙하
 
 		// 아래로 한 칸 내릴 수 있는지 확인
-		if (check_collision(block[rotation], x, y + 1)) {
+		if (check_collision(block[block_state], x, y + 1)) {
             y++;
 			// 블럭을 tetris_table에 고정
 			for (int i = 0; i < 4; i++)
 				for (int j = 0; j < 4; j++)
-					if (block[rotation][i][j] != 0)
-						tetris_table[y + i][x + j] = block[rotation][i][j];
+					if (block[block_state][i][j] != 0)
+						tetris_table[y + i][x + j] = block[block_state][i][j];
 			break; // 다음 블럭으로
 		}
 
@@ -290,6 +357,8 @@ int game_start(void){
 /// @return 
 int main(void)
 {
+    set_input_mode(); // 터미널 설정
+
 	int menu = 1;
 
 	while(menu)
@@ -315,5 +384,6 @@ int main(void)
 		}
 	}
 
+    reset_input_mode(); // 터미널 설정정
 	return 0;
 }
