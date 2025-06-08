@@ -179,11 +179,6 @@ long point = 0; /* 현재 점수*/
 int display_menu(void); /* 메뉴 표시*/
 
 
-
-
-
-
-
 /* 메뉴 표시*/
 int display_menu(void)
 {
