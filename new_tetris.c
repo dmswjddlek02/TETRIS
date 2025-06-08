@@ -220,14 +220,23 @@ int display_menu(void)
 /*게임 실행 화면*/
 int game_start(void){
     srand(time(NULL)); // 난수 초기화
-	int randum = rand() % 7;
-    int block = 0;
+	int randum = rand() % 7 + 1;
     //while(1){
 		system("clear");
 
+        printf("%d\n",randum);
+
 		for(int i=0; i<20; i++){
 			for(int j=0; j<10; j++){
-				if(i >= y && i < y + 4 && j >= x && j < x + 4) printf("%d",tetris_table[i][j]+t_block[0][i-y][j-x]);
+				if(i >= y && i < y + 4 && j >= x && j < x + 4){
+                    if(randum==I_BLOCK)printf("%d",tetris_table[i][j]+i_block[0][i-y][j-x]);
+                    if(randum==T_BLOCK)printf("%d",tetris_table[i][j]+t_block[0][i-y][j-x]);
+                    if(randum==S_BLOCK)printf("%d",tetris_table[i][j]+s_block[0][i-y][j-x]);
+                    if(randum==Z_BLOCK)printf("%d",tetris_table[i][j]+z_block[0][i-y][j-x]);
+                    if(randum==L_BLOCK)printf("%d",tetris_table[i][j]+l_block[0][i-y][j-x]);
+                    if(randum==J_BLOCK)printf("%d",tetris_table[i][j]+j_block[0][i-y][j-x]);
+                    if(randum==O_BLOCK)printf("%d",tetris_table[i][j]+o_block[0][i-y][j-x]);
+                }
                 else printf("%d", tetris_table[i][j]);
 			}
 			printf("\n");
