@@ -217,11 +217,8 @@ int display_menu(void)
 }
 
 /*블록 세팅*/
-void draw_block(int choice, int color_code) {
-    if(choice==0) printf("\033[%dm \033[0m", color_code);  // 꽉 찬 블록 (백그라운드 컬러 채우기)
-	if(choice==1) printf("\033[%dm\u2588\033[0m", color_code);  // 세로 컬러 블록
-	if(choice==2) printf("\033[%dm\u2591\033[0m", color_code);  // 세로 반투명 블록
-	if(choice==3) printf("\033[%dm\u25A0\033[0m", color_code);  // 네모 블록
+void draw_block(int color_code) {
+	printf("\033[%dm\u25A0\033[0m", color_code);  // 네모 블록
 }
 
 /*블록 생성*/
@@ -229,8 +226,8 @@ void new_block(int num){
 	if(num == I_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(i_block[0][i][j]==1)draw_block(3,31);
-				if(i_block[0][i][j]==0)draw_block(3, 30);
+				if(i_block[0][i][j]==1)draw_block(31);
+				if(i_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -238,8 +235,8 @@ void new_block(int num){
 	if(num == T_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(t_block[0][i][j]==1)draw_block(3,33);
-				if(t_block[0][i][j]==0)draw_block(3, 30);
+				if(t_block[0][i][j]==1)draw_block(33);
+				if(t_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -247,8 +244,8 @@ void new_block(int num){
 	if(num == S_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(s_block[0][i][j]==1)draw_block(3,34);
-				if(s_block[0][i][j]==0)draw_block(3, 30);
+				if(s_block[0][i][j]==1)draw_block(34);
+				if(s_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -256,8 +253,8 @@ void new_block(int num){
 	if(num == Z_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(z_block[0][i][j]==1)draw_block(3,36);
-				if(z_block[0][i][j]==0)draw_block(3, 30);
+				if(z_block[0][i][j]==1)draw_block(36);
+				if(z_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -265,8 +262,8 @@ void new_block(int num){
 	if(num == L_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(l_block[0][i][j]==1)draw_block(3,35);
-				if(l_block[0][i][j]==0)draw_block(3, 30);
+				if(l_block[0][i][j]==1)draw_block(35);
+				if(l_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -274,8 +271,8 @@ void new_block(int num){
 	if(num == J_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(j_block[0][i][j]==1)draw_block(3,35);
-				if(j_block[0][i][j]==0)draw_block(3, 30);
+				if(j_block[0][i][j]==1)draw_block(35);
+				if(j_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -283,8 +280,8 @@ void new_block(int num){
 	if(num == O_BLOCK){
 		for(int i=0;i<4;i++){
 			for(int j=0;j<4;j++){
-				if(o_block[0][i][j]==1)draw_block(3,32);
-				if(o_block[0][i][j]==0)draw_block(3, 30);
+				if(o_block[0][i][j]==1)draw_block(32);
+				if(o_block[0][i][j]==0)draw_block(30);
 			}
 			printf("\n");
 		}
@@ -302,8 +299,8 @@ int game_start(void){
 		printf("\n");
 		for(int i=0; i<20; i++){
 			for(int j=0; j<10; j++){
-				if(tetris_table[i][j] == 0) draw_block(3, 30);
-				if(tetris_table[i][j] == 1) draw_block(3, 37);
+				if(tetris_table[i][j] == 0) draw_block(30);
+				if(tetris_table[i][j] == 1) draw_block(37);
 			}
 			printf("\n");
 		}
