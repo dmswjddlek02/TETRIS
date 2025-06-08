@@ -217,34 +217,70 @@ int display_menu(void)
 	return 0;
 }
 
+int check_collision(char block[4][4], int x, int y) {
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            if (block[i][j] != 0 && tetris_table[y + i][x + j] != 0)
+                return 1; // 충돌 발생
+    return 0;
+}
+
+
 /*게임 실행 화면*/
 int game_start(void){
-    srand(time(NULL)); // 난수 초기화
+    srand(time(NULL));
 	int randum = rand() % 7 + 1;
-    //while(1){
+    char (*block)[4][4];
+
+    switch (randum) {
+        case I_BLOCK: block = i_block; break;
+        case T_BLOCK: block = t_block; break;
+        case S_BLOCK: block = s_block; break;
+        case Z_BLOCK: block = z_block; break;
+        case L_BLOCK: block = l_block; break;
+        case J_BLOCK: block = j_block; break;
+        case O_BLOCK: block = o_block; break;
+    }
+
+	int rotation = 0;
+	x = 4;
+	y = 0;
+
+	while (1) {
 		system("clear");
 
-        printf("%d\n",randum);
-
-		for(int i=0; i<20; i++){
-			for(int j=0; j<10; j++){
-				if(i >= y && i < y + 4 && j >= x && j < x + 4){
-                    if(randum==I_BLOCK)printf("%d",tetris_table[i][j]+i_block[0][i-y][j-x]);
-                    if(randum==T_BLOCK)printf("%d",tetris_table[i][j]+t_block[0][i-y][j-x]);
-                    if(randum==S_BLOCK)printf("%d",tetris_table[i][j]+s_block[0][i-y][j-x]);
-                    if(randum==Z_BLOCK)printf("%d",tetris_table[i][j]+z_block[0][i-y][j-x]);
-                    if(randum==L_BLOCK)printf("%d",tetris_table[i][j]+l_block[0][i-y][j-x]);
-                    if(randum==J_BLOCK)printf("%d",tetris_table[i][j]+j_block[0][i-y][j-x]);
-                    if(randum==O_BLOCK)printf("%d",tetris_table[i][j]+o_block[0][i-y][j-x]);
-                }
-                else printf("%d", tetris_table[i][j]);
+		// 블럭 + 배경 출력
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 10; j++) {
+				if (i >= y && i < y + 4 && j >= x && j < x + 4 && block[rotation][i - y][j - x] != 0) {
+					printf("%d", block[rotation][i - y][j - x]);
+				} 
+                else {
+					printf("%d", tetris_table[i][j]);
+				}
 			}
 			printf("\n");
 		}
-		
-//	}
+
+		usleep(500000); // 0.5초마다 낙하
+
+		// 아래로 한 칸 내릴 수 있는지 확인
+		if (check_collision(block[rotation], x, y + 1)) {
+            y++;
+			// 블럭을 tetris_table에 고정
+			for (int i = 0; i < 4; i++)
+				for (int j = 0; j < 4; j++)
+					if (block[rotation][i][j] != 0)
+						tetris_table[y + i][x + j] = block[rotation][i][j];
+			break; // 다음 블럭으로
+		}
+
+		y++; // 한 칸 아래로 내림
+	}
+
 	return 0;
 }
+
 
 
 
