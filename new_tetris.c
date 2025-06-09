@@ -269,16 +269,91 @@ int check_collision(char block[4][4], int x, int y) {
     return 0;
 }
 
-
-
-//게임 오버 창
+//게임오버버 
 void game_over() {
     system("clear");
+
+    // 이름 입력
     printf("\n\n\t\t\t  ===== GAME OVER =====\n\n");
     printf("\t\t\t   최종 점수: %ld\n", point);
-    printf("\n\t\t\t   아무 키나 눌러 메뉴로...\n");
-    getchar(); // 키 입력 기다리기
+
+    printf("\t\t\t   이름을 입력하세요: ");
+    scanf("%s", temp_result.name);
+
+    // 점수 저장
+    temp_result.point = point;
+
+    // 시간 저장
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    temp_result.year = t->tm_year + 1900;
+    temp_result.month = t->tm_mon + 1;
+    temp_result.day = t->tm_mday;
+    temp_result.hour = t->tm_hour;
+    temp_result.min = t->tm_min;
+
+    // 순위는 나중에 정렬할 때 계산 (현재는 0으로 초기화)
+    temp_result.rank = 0;
+
+    printf("\n\t\t\t   결과가 저장되었습니다.\n");
+
+	//테스트용
+	printf("\n이름: %s, 점수: %ld, 날짜: %04d-%02d-%02d %02d:%02d\n",
+    temp_result.name,
+    temp_result.point,
+    temp_result.year,
+    temp_result.month,
+    temp_result.day,
+    temp_result.hour,
+    temp_result.min);
+
+    printf("\t\t\t   아무 키나 눌러 메뉴로...\n");
+    getchar(); // 남은 개행 제거
+    getchar(); // 입력 대기
 }
+
+
+//블록 삭제
+void clear_lines() {
+    int lines_cleared = 0;
+
+    for (int i = 18; i >= 1; i--) {
+        int full = 1;
+        for (int j = 1; j <= 8; j++) {
+            if (tetris_table[i][j] == 0) {
+                full = 0;
+                break;
+            }
+        }
+
+        if (full) {
+            // 한 줄 삭제
+            for (int k = i; k >= 1; k--) {
+                for (int j = 1; j <= 8; j++) {
+                    tetris_table[k][j] = tetris_table[k - 1][j];
+                }
+            }
+
+            // 맨 윗 줄 초기화
+            for (int j = 1; j <= 8; j++) {
+                tetris_table[0][j] = 0;
+            }
+
+            lines_cleared++;  // 삭제한 줄 수 누적
+            i++; // 현재 줄 다시 확인
+        }
+    }
+
+    // 점수 추가 (보너스 포함)
+    switch (lines_cleared) {
+        case 1: point += 100; break;
+        case 2: point += 300; break;
+        case 3: point += 500; break;
+        case 4: point += 800; break;
+        default: break;
+    }
+}
+
 
 
 
@@ -378,13 +453,15 @@ if (check_collision(block[block_state], x, y)) {
             }
         }
     }
+
+	clear_lines();
     break;
 }
 
 y++; // 충돌 안 했을 때만 한 칸 내림
 	}
 	}
-
+	
 	return 0;
 }
 
