@@ -277,8 +277,10 @@ void game_over() {
     printf("\n\n\t\t\t  ===== GAME OVER =====\n\n");
     printf("\t\t\t   최종 점수: %ld\n", point);
 
+	reset_input_mode();
     printf("\t\t\t   이름을 입력하세요: ");
     scanf("%s", temp_result.name);
+	set_input_mode();
 
     // 점수 저장
     temp_result.point = point;
@@ -486,8 +488,10 @@ y++; // 충돌 안 했을 때만 한 칸 내림
 //이름 기록 검색
 void search_result() {
     char search_name[30];
+	reset_input_mode();
     printf("\n검색할 이름을 입력하세요: ");
     scanf("%s", search_name);
+	set_input_mode();
 
     FILE *fp = fopen("records.dat", "rb");
     if (!fp) {
@@ -562,6 +566,7 @@ int main(void)
 		{
 			game = GAME_START;
 			menu = game_start();
+			menu = 1;
 		}
 		else if(menu == 2)
 		{
@@ -573,10 +578,11 @@ int main(void)
 		}
 		else if(menu == 4)
 		{
+			reset_input_mode(); // 터미널 설정
 			exit(0);
 		}
 	}
 
-    reset_input_mode(); // 터미널 설정정
+    reset_input_mode(); // 터미널 설정
 	return 0;
 }
