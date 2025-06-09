@@ -256,13 +256,26 @@ int check_collision(char block[4][4], int x, int y) {
 				int py = y + i;
 				int px = x + j;
 
-				// 벽 또는 아래로 벗어남
-				if (py >= 20 || px < 0 || px >= 10 || tetris_table[py][px] != 0)
+				if (py >= 20 || px < 0 || px >= 10)
+					return 1;
+
+				// 💥 여기 수정: 8(벽)은 충돌이 아님!
+				if (tetris_table[py][px] > 0 && tetris_table[py][px] < 8)
 					return 1;
 			}
 		}
 	}
 	return 0;
+}
+
+
+//게임 오버 창
+void game_over() {
+    system("clear");
+    printf("\n\n\t\t\t  ===== GAME OVER =====\n\n");
+    printf("\t\t\t   최종 점수: %ld\n", point);
+    printf("\n\t\t\t   아무 키나 눌러 메뉴로...\n");
+    getchar(); // 키 입력 기다리기
 }
 
 
@@ -287,6 +300,12 @@ int game_start(void){
 	x = 4;
 	y = 0;
 	block_state = 0;
+
+	// 블럭 생성 직후 충돌 → 게임 오버
+if (check_collision(block[block_state], x, y)) {
+    game_over();
+    return 0;
+}
 
 
 	while (1) {
