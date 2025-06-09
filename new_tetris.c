@@ -248,12 +248,21 @@ int display_menu(void)
 	return ch - '0';
 }
 
+//충돌검사
 int check_collision(char block[4][4], int x, int y) {
-    for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            if (block[i][j] != 0 && tetris_table[y + i][x + j] != 0)
-                return 1; // 충돌 발생
-    return 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (block[i][j] != 0) {
+				int py = y + i;
+				int px = x + j;
+
+				// 벽 또는 아래로 벗어남
+				if (py >= 20 || px < 0 || px >= 10 || tetris_table[py][px] != 0)
+					return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 
@@ -261,7 +270,8 @@ int check_collision(char block[4][4], int x, int y) {
 int game_start(void){
     
     srand(time(NULL));
-	int randum = rand() % 7 + 1;
+	while(1){
+		int randum = rand() % 7 + 1;
     char (*block)[4][4];
 
     switch (randum) {
@@ -276,6 +286,7 @@ int game_start(void){
 
 	x = 4;
 	y = 0;
+	block_state = 0;
 
 
 	while (1) {
@@ -333,16 +344,23 @@ int game_start(void){
 
 		// 아래로 한 칸 내릴 수 있는지 확인
 		if (check_collision(block[block_state], x, y + 1)) {
-            y++;
-			// 블럭을 tetris_table에 고정
-			for (int i = 0; i < 4; i++)
-				for (int j = 0; j < 4; j++)
-					if (block[block_state][i][j] != 0)
-						tetris_table[y + i][x + j] = block[block_state][i][j];
-			break; // 다음 블럭으로
-		}
+    // 💥 충돌했으면 지금 위치에 고정하고 break!
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (block[block_state][i][j] != 0) {
+                int py = y + i;
+                int px = x + j;
+                if (py >= 0 && py < 20 && px >= 0 && px < 10) {
+                    tetris_table[py][px] = block[block_state][i][j];
+                }
+            }
+        }
+    }
+    break;
+}
 
-		y++; // 한 칸 아래로 내림
+y++; // 충돌 안 했을 때만 한 칸 내림
+	}
 	}
 
 	return 0;
