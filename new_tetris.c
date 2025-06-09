@@ -297,15 +297,12 @@ void game_over() {
 
     printf("\n\t\t\t   결과가 저장되었습니다.\n");
 
-	//테스트용
-	printf("\n이름: %s, 점수: %ld, 날짜: %04d-%02d-%02d %02d:%02d\n",
-    temp_result.name,
-    temp_result.point,
-    temp_result.year,
-    temp_result.month,
-    temp_result.day,
-    temp_result.hour,
-    temp_result.min);
+	// 게임 결과를 파일에 저장
+FILE *fp = fopen("records.dat", "ab"); // append binary
+if (fp != NULL) {
+    fwrite(&temp_result, sizeof(temp_result), 1, fp);
+    fclose(fp);
+}
 
     printf("\t\t\t   아무 키나 눌러 메뉴로...\n");
     getchar(); // 남은 개행 제거
@@ -486,6 +483,64 @@ y++; // 충돌 안 했을 때만 한 칸 내림
 	return 0;
 }
 
+//이름 기록 검색
+void search_result() {
+    char search_name[30];
+    printf("\n검색할 이름을 입력하세요: ");
+    scanf("%s", search_name);
+
+    FILE *fp = fopen("records.dat", "rb");
+    if (!fp) {
+        printf("기록 파일이 없습니다.\n");
+        return;
+    }
+
+    struct result r;
+    int found = 0;
+    printf("\n--- 검색 결과 ---\n");
+    while (fread(&r, sizeof(r), 1, fp)) {
+        if (strstr(r.name, search_name)) {
+            printf("이름: %s | 점수: %ld | 날짜: %04d-%02d-%02d %02d:%02d\n",
+                   r.name, r.point, r.year, r.month, r.day, r.hour, r.min);
+            found = 1;
+        }
+    }
+    fclose(fp);
+
+    if (!found) {
+        printf("해당 이름의 기록이 없습니다.\n");
+    }
+
+    printf("\n아무 키나 누르세요...");
+    getchar(); getchar(); // flush + 대기
+}
+
+//전체 기록 출력
+void print_result() {
+    FILE *fp = fopen("records.dat", "rb");
+    if (!fp) {
+        printf("기록 파일이 없습니다.\n");
+        return;
+    }
+
+    struct result r;
+    int count = 0;
+
+    printf("\n--- 전체 기록 ---\n");
+    while (fread(&r, sizeof(r), 1, fp)) {
+        printf("이름: %s | 점수: %ld | 날짜: %04d-%02d-%02d %02d:%02d\n",
+               r.name, r.point, r.year, r.month, r.day, r.hour, r.min);
+        count++;
+    }
+    fclose(fp);
+
+    if (count == 0) {
+        printf("기록이 없습니다.\n");
+    }
+
+    printf("\n아무 키나 누르세요...");
+    getchar(); getchar(); // flush + 대기
+}
 
 
 
@@ -510,11 +565,11 @@ int main(void)
 		}
 		else if(menu == 2)
 		{
-			//search_result();
+			search_result();
 		}
 		else if(menu == 3)
 		{
-			//print_result();
+			print_result();
 		}
 		else if(menu == 4)
 		{
