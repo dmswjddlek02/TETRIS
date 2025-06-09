@@ -250,23 +250,25 @@ int display_menu(void)
 
 //충돌검사
 int check_collision(char block[4][4], int x, int y) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (block[i][j] != 0) {
-				int py = y + i;
-				int px = x + j;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (block[i][j] != 0) {
+                int py = y + i;
+                int px = x + j;
 
-				if (py >= 20 || px < 0 || px >= 10)
-					return 1;
+                // 범위 검사 먼저
+                if (py < 0 || py >= 20 || px < 0 || px >= 10)
+                    return 1;
 
-				// 💥 여기 수정: 8(벽)은 충돌이 아님!
-				if (tetris_table[py][px] > 0 && tetris_table[py][px] < 8)
-					return 1;
-			}
-		}
-	}
-	return 0;
+                // 💥 0이 아니면 충돌!
+                if (tetris_table[py][px] != 0)
+                    return 1;
+            }
+        }
+    }
+    return 0;
 }
+
 
 
 //게임 오버 창
@@ -277,6 +279,7 @@ void game_over() {
     printf("\n\t\t\t   아무 키나 눌러 메뉴로...\n");
     getchar(); // 키 입력 기다리기
 }
+
 
 
 /*게임 실행 화면*/
@@ -298,7 +301,7 @@ int game_start(void){
     }
 
 	x = 4;
-	y = 0;
+	y = 1;
 	block_state = 0;
 
 	// 블럭 생성 직후 충돌 → 게임 오버
