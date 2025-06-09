@@ -354,6 +354,23 @@ void clear_lines() {
     }
 }
 
+//블록 꾸미기기
+void draw_block(int color_code) {
+    printf("\033[%dm■\033[0m", color_code);
+}
+int block_color(int block_type) {
+    switch (block_type) {
+        case I_BLOCK: return 31;  // 빨강
+        case T_BLOCK: return 33;  // 노랑
+        case S_BLOCK: return 34;  // 파랑
+        case Z_BLOCK: return 36;  // 시안
+        case L_BLOCK: 
+        case J_BLOCK: return 35;  // 마젠타
+        case O_BLOCK: return 32;  // 초록
+		case 8: return 37;
+        default: return 30;       // 검정 (또는 빈칸)
+    }
+}
 
 
 
@@ -425,17 +442,21 @@ if (check_collision(block[block_state], x, y)) {
 		system("clear");
 
 		// 블럭 + 배경 출력
-		for (int i = 0; i < 20; i++) {
-			for (int j = 0; j < 10; j++) {
-				if (i >= y && i < y + 4 && j >= x && j < x + 4 && block[block_state][i - y][j - x] != 0) {
-					printf("%d", block[block_state][i - y][j - x]);
-				} 
-                else {
-					printf("%d", tetris_table[i][j]);
-				}
+for (int i = 0; i < 20; i++) {
+	for (int j = 0; j < 10; j++) {
+		int draw_value = tetris_table[i][j];  // 기본은 맵에 있는 값
+
+		// 현재 내려오고 있는 블럭이 있는 좌표라면 그 값으로 덮어쓰기
+		if (i >= y && i < y + 4 && j >= x && j < x + 4) {
+			int bval = block[block_state][i - y][j - x];
+			if (bval != 0) {
+				draw_value = bval;
 			}
-			printf("\n");
 		}
+		draw_block(block_color(draw_value));
+	}
+	printf("\n");
+}
 
 		usleep(500000); // 0.5초마다 낙하
 
