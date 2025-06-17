@@ -16,17 +16,17 @@
 #endif
 #define CTIME 1
 
-volatile sig_atomic_t tick = 0; // 시그널에서 설정됨
+volatile sig_atomic_t tick = 0;
 void signal_handler(int signo) {
     if (signo == SIGALRM) {
-        tick = 1; // 낙하 플래그 설정
+        tick = 1; // 낙하 플래그
     }
 }
 
 void set_timer() {
     struct itimerval timer;
     timer.it_interval.tv_sec = 0;
-    timer.it_interval.tv_usec = 500000;  // 0.5초 주기
+    timer.it_interval.tv_usec = 500000;
     timer.it_value = timer.it_interval;
     setitimer(ITIMER_REAL, &timer, NULL);
 }
@@ -135,7 +135,7 @@ char o_block[4][4][4] =
 	};
 
 
-char test_block[1]={9}; //테스트 블록록
+//색깔 넣으려고 수정좀 했습니다*^_^*
 
 /* 테트리스 판을 2차원 배열로 표현
  * 2차원 배열의 2차원 배열
@@ -204,7 +204,7 @@ void set_input_mode() {
 	struct termios new_termios;
 	tcgetattr(STDIN_FILENO, &original_termios);
 	new_termios = original_termios;
-	new_termios.c_lflag &= ~(ICANON | ECHO);  // 비정규 모드 + 에코 제거
+	new_termios.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
 }
 
@@ -212,7 +212,7 @@ void reset_input_mode() {
 	tcsetattr(STDIN_FILENO, TCSANOW, &original_termios);
 }
 
-// 키 입력 여부 확인
+// 키 입력
 int key_pressed() {
 	struct timeval tv = {0L, 0L};
 	fd_set fds;
@@ -221,7 +221,7 @@ int key_pressed() {
 	return select(1, &fds, NULL, NULL, &tv);
 }
 
-// 키 하나 읽기
+// 키 읽기
 char read_key() {
 	char ch;
 	if (read(STDIN_FILENO, &ch, 1) > 0)
@@ -260,7 +260,7 @@ int display_menu(void)
 		}
 	}
 
-	set_input_mode();  // 다시 비정규 모드
+	set_input_mode();
 	return ch - '0';
 }
 
@@ -272,11 +272,9 @@ int check_collision(char block[4][4], int x, int y) {
                 int py = y + i;
                 int px = x + j;
 
-                // 범위 검사 먼저
                 if (py < 0 || py >= 20 || px < 0 || px >= 10)
                     return 1;
 
-                // 💥 0이 아니면 충돌!
                 if (tetris_table[py][px] != 0)
                     return 1;
             }
@@ -285,11 +283,10 @@ int check_collision(char block[4][4], int x, int y) {
     return 0;
 }
 
-//게임오버버 
+//게임오버
 void game_over() {
     system("clear");
 
-    // 이름 입력
     printf("\n\n\t\t\t  ===== GAME OVER =====\n\n");
     printf("\t\t\t   최종 점수: %ld\n", point);
 
@@ -298,15 +295,12 @@ void game_over() {
     scanf("%s", temp_result.name);
 	set_input_mode();
 
-    // 점수 저장
     temp_result.point = point;
 
-	// 최고 점수 갱신
 	if (point > best_point) {
     	best_point = point;
 	}
 
-    // 시간 저장
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     temp_result.year = t->tm_year + 1900;
@@ -315,21 +309,20 @@ void game_over() {
     temp_result.hour = t->tm_hour;
     temp_result.min = t->tm_min;
 
-    // 순위는 나중에 정렬할 때 계산 (현재는 0으로 초기화)
     temp_result.rank = 0;
 
     printf("\n\t\t\t   결과가 저장되었습니다.\n");
 
-	// 게임 결과를 파일에 저장
-FILE *fp = fopen("records.dat", "ab"); // append binary
-if (fp != NULL) {
-    fwrite(&temp_result, sizeof(temp_result), 1, fp);
-    fclose(fp);
-}
+	// 게임 결과 저장
+	FILE *fp = fopen("records.dat", "ab");
+	if (fp != NULL) {
+    	fwrite(&temp_result, sizeof(temp_result), 1, fp);
+    	fclose(fp);
+	}
 
     printf("\t\t\t   아무 키나 눌러 메뉴로...\n");
-    getchar(); // 남은 개행 제거
-    getchar(); // 입력 대기
+    getchar();
+    getchar();
 }
 
 
@@ -347,24 +340,22 @@ void clear_lines() {
         }
 
         if (full) {
-            // 한 줄 삭제
             for (int k = i; k >= 1; k--) {
                 for (int j = 1; j <= 8; j++) {
                     tetris_table[k][j] = tetris_table[k - 1][j];
                 }
             }
 
-            // 맨 윗 줄 초기화
             for (int j = 1; j <= 8; j++) {
                 tetris_table[0][j] = 0;
             }
 
-            lines_cleared++;  // 삭제한 줄 수 누적
-            i++; // 현재 줄 다시 확인
+            lines_cleared++;
+            i++;
         }
     }
 
-    // 점수 추가 (보너스 포함)
+    // 점수 추가 (++보너스 추가가)
     switch (lines_cleared) {
         case 1: point += 100; break;
         case 2: point += 300; break;
@@ -374,7 +365,7 @@ void clear_lines() {
     }
 }
 
-//블록 꾸미기기
+//블록 꾸미기
 void draw_block(int color_code) {
     printf("\033[%dm■\033[0m", color_code);
 }
@@ -388,7 +379,7 @@ int block_color(int block_type) {
         case J_BLOCK: return 35;  // 마젠타
         case O_BLOCK: return 32;  // 초록
 		case 8: return 37;
-        default: return 30;       // 검정 (또는 빈칸)
+        default: return 30;       // 검정
     }
 }
 
@@ -396,9 +387,9 @@ void reset_tetris_table() {
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
             if (i == 0 || i == 19 || j == 0 || j == 9)
-                tetris_table[i][j] = 8;  // 벽
+                tetris_table[i][j] = 8;
             else
-                tetris_table[i][j] = 0;  // 빈 공간
+                tetris_table[i][j] = 0;
         }
     }
 }
@@ -579,7 +570,7 @@ int game_start(void) {
 
 
 
-//이름 기록 검색
+//이름 검색
 void search_result() {
     char search_name[30];
 	reset_input_mode();
@@ -610,10 +601,10 @@ void search_result() {
     }
 
     printf("\n아무 키나 누르세요...");
-    getchar(); getchar(); // flush + 대기
+    getchar(); getchar();
 }
 
-// 최고 점수 불러오기 함수 추가
+// 최고 점수 불러오기
 void load_best_score() {
     FILE *fp = fopen("records.dat", "rb");
     if (!fp) return;
@@ -628,7 +619,7 @@ void load_best_score() {
     fclose(fp);
 }
 
-// 전체 기록 출력 (점수순 정렬)
+// 전체 기록 출력 (점수순으로 정렬)
 void print_result() {
     FILE *fp = fopen("records.dat", "rb");
     if (!fp) {
@@ -644,7 +635,6 @@ void print_result() {
     }
     fclose(fp);
 
-    // 점수 내림차순 정렬
     for (int i = 0; i < count - 1; i++) {
         for (int j = i + 1; j < count; j++) {
             if (records[i].point < records[j].point) {
