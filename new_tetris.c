@@ -402,13 +402,16 @@ void reset_tetris_table() {
 /*게임 실행 화면*/
 int game_start(void) {
     srand(time(NULL));
-	reset_tetris_table();
+    reset_tetris_table();
+
+    next_block_number = rand() % 7 + 1;
 
     while (1) {
-        int randum = rand() % 7 + 1;
-        char (*block)[4][4];
+        block_number = next_block_number;
+        next_block_number = rand() % 7 + 1;
 
-        switch (randum) {
+        char (*block)[4][4];
+        switch (block_number) {
             case I_BLOCK: block = i_block; break;
             case T_BLOCK: block = t_block; break;
             case S_BLOCK: block = s_block; break;
@@ -457,12 +460,11 @@ int game_start(void) {
                     }
                 } else if (ch == 'p' || ch == 'P') {
                     printf("게임을 종료합니다.\n");
-                    reset_input_mode(); // 터미널 복원
+                    reset_input_mode();
                     exit(0);
                 }
             }
 
-            // 자동 낙하
             if (tick) {
                 tick = 0;
                 if (check_collision(block[block_state], x, y + 1)) {
@@ -483,31 +485,78 @@ int game_start(void) {
                 y++;
             }
 
-            // 화면 출력
             system("clear");
-			draw_block(30);
-			printf("\n");
+            draw_block(30);
+            printf("\n");
+            printf("                              [NEXT BLOCK]\n");
+
             for (int i = 0; i < 20; i++) {
-				draw_block(30);
-                for (int j = 0; j < 10; j++) {
-                    int draw_value = tetris_table[i][j];
-                    if (i >= y && i < y + 4 && j >= x && j < x + 4) {
-                        int bval = block[block_state][i - y][j - x];
-                        if (bval != 0) {
-                            draw_value = bval;
+                draw_block(30);
+                for (int j = 0; j < 20; j++) {
+                    int draw_value = 0;
+                    if (j < 10) {
+                        draw_value = tetris_table[i][j];
+                        if (i >= y && i < y + 4 && j >= x && j < x + 4) {
+                            int bval = block[block_state][i - y][j - x];
+                            if (bval != 0) draw_value = bval;
                         }
+                        draw_block(block_color(draw_value));
+                    } else if (j >= 10 && j < 13) {
+                        draw_block(30);
+                    } else if (i >= 3 && i < 10 && j >= 13 && j < 19) {
+                        int box_i = i - 3;
+                        int box_j = j - 13;
+                        if (box_i == 0 || box_i == 6 || box_j == 0 || box_j == 5) {
+                            draw_block(37);
+                        } else {
+                            char (*next_block)[4][4];
+                            switch (next_block_number) {
+                                case I_BLOCK: next_block = i_block; break;
+                                case T_BLOCK: next_block = t_block; break;
+                                case S_BLOCK: next_block = s_block; break;
+                                case Z_BLOCK: next_block = z_block; break;
+                                case L_BLOCK: next_block = l_block; break;
+                                case J_BLOCK: next_block = j_block; break;
+                                case O_BLOCK: next_block = o_block; break;
+                                default: next_block = i_block; break;
+                            }
+
+                            int block_y = -1, block_x = -1;
+                            if (next_block_number == I_BLOCK) {
+                                if (box_i == 3 && box_j >= 1 && box_j <= 4) {
+                                    block_y = 0;
+                                    block_x = box_j - 1;
+                                }
+                            } else {
+                                if (box_i >= 2 && box_i <= 4 && box_j >= 2 && box_j <= 3) {
+                                    block_y = box_i - 2;
+                                    block_x = box_j - 2;
+                                }
+                            }
+
+                            if (block_y >= 0 && block_x >= 0 && block_y < 4 && block_x < 4) {
+                                int val = next_block[0][block_y][block_x];
+                                if (val != 0)
+                                    draw_block(block_color(val));
+                                else
+                                    printf("  ");
+                            } else {
+                                printf("  ");
+                            }
+                        }
+                    } else {
+                        draw_block(30);
                     }
-                    draw_block(block_color(draw_value));
                 }
                 printf("\n");
             }
 
-            usleep(10000); // CPU 점유 줄이기 (입력 polling은 빠르게)
+            usleep(10000);
         }
     }
-
     return 0;
 }
+
 
 
 //이름 기록 검색
