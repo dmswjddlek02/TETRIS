@@ -1,13 +1,20 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <time.h>
+#ifdef _WIN32
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <conio.h>
+    #include <windows.h>
+#else
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <signal.h>
+    #include <string.h>
+    #include <sys/time.h>
+    #include <termios.h>
+    #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/ioctl.h>
+    #include <time.h>
+#endif
 
 /* 타이머  */
 #define CCHAR 0
@@ -16,12 +23,15 @@
 #endif
 #define CTIME 1
 
+
+#ifndef _WIN32
 volatile sig_atomic_t tick = 0;
 void signal_handler(int signo) {
     if (signo == SIGALRM) {
-        tick = 1; // 낙하 플래그
+        tick = 1;
     }
 }
+#endif
 
 void set_timer() {
     struct itimerval timer;
@@ -30,6 +40,16 @@ void set_timer() {
     timer.it_value = timer.it_interval;
     setitimer(ITIMER_REAL, &timer, NULL);
 }
+
+#ifdef _WIN32
+void sleep_for_tick() {
+    Sleep(10);
+}
+#else
+void sleep_for_tick() {
+    usleep(10000);  // 10ms
+}
+#endif
 
 
 /* 왼쪽, 오른쪽, 아래, 회전  */
@@ -200,34 +220,47 @@ long point = 0; /* 현재 점수*/
 /*터미널 모드 설정*/
 struct termios original_termios;
 
+#ifndef _WIN32
+struct termios original_termios;
 void set_input_mode() {
-	struct termios new_termios;
-	tcgetattr(STDIN_FILENO, &original_termios);
-	new_termios = original_termios;
-	new_termios.c_lflag &= ~(ICANON | ECHO);
-	tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+    struct termios new_termios;
+    tcgetattr(STDIN_FILENO, &original_termios);
+    new_termios = original_termios;
+    new_termios.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
 }
-
 void reset_input_mode() {
-	tcsetattr(STDIN_FILENO, TCSANOW, &original_termios);
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_termios);
 }
+#else
+void set_input_mode() {}
+void reset_input_mode() {}
+#endif
 
 // 키 입력
 int key_pressed() {
-	struct timeval tv = {0L, 0L};
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(STDIN_FILENO, &fds);
-	return select(1, &fds, NULL, NULL, &tv);
+#ifdef _WIN32
+    return _kbhit();
+#else
+    struct timeval tv = {0L, 0L};
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
+#endif
 }
 
-// 키 읽기
 char read_key() {
-	char ch;
-	if (read(STDIN_FILENO, &ch, 1) > 0)
-		return ch;
-	return 0;
+#ifdef _WIN32
+    return _getch();
+#else
+    char ch;
+    if (read(STDIN_FILENO, &ch, 1) > 0)
+        return ch;
+    return 0;
+#endif
 }
+
 
 
 int display_menu(void); /* 메뉴 표시*/
@@ -367,7 +400,11 @@ void clear_lines() {
 
 //블록 꾸미기
 void draw_block(int color_code) {
+#ifdef _WIN32
+    printf("■");
+#else
     printf("\033[%dm■\033[0m", color_code);
+#endif
 }
 int block_color(int block_type) {
     switch (block_type) {
@@ -562,7 +599,7 @@ int game_start(void) {
                 printf("\n");
             }
 
-            usleep(10000);
+            sleep_for_tick();
         }
     }
     return 0;
