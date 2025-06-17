@@ -546,6 +546,18 @@ int game_start(void) {
                                 printf("  ");
                             }
                         }
+                    } else if (i == 11 && j == 12) {
+                        printf("[HIGH SCORE]");
+                        j += 11;
+                    } else if (i == 12 && j == 12) {
+                        printf("%d", best_point);
+                        j += 11;
+                    } else if (i == 14 && j == 12) {
+                        printf("[NOW SCORE]");
+                        j += 11;
+                    } else if (i == 15 && j == 12) {
+                        printf("%ld", point);
+                        j += 11;
                     } else {
                         draw_block(30);
                     }
@@ -558,7 +570,6 @@ int game_start(void) {
     }
     return 0;
 }
-
 
 
 
