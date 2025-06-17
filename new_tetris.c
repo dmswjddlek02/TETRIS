@@ -400,12 +400,15 @@ void clear_lines() {
 
 //블록 꾸미기
 void draw_block(int color_code) {
-#ifdef _WIN32
-    printf("■");
+#ifdef __APPLE__
+    printf("\033[%dm■ \033[0m", color_code); // macOS: 공백 포함
+#elif defined(_WIN32)
+    printf("■ ");
 #else
-    printf("\033[%dm■\033[0m", color_code);
+    printf("\033[%dm■\033[0m", color_code);  // Linux: 색상 적용
 #endif
 }
+
 int block_color(int block_type) {
     switch (block_type) {
         case I_BLOCK: return 31;  // 빨강
