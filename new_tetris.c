@@ -613,7 +613,22 @@ void search_result() {
     getchar(); getchar(); // flush + 대기
 }
 
-//전체 기록 출력
+// 최고 점수 불러오기 함수 추가
+void load_best_score() {
+    FILE *fp = fopen("records.dat", "rb");
+    if (!fp) return;
+
+    struct result r;
+    best_point = 0;
+    while (fread(&r, sizeof(r), 1, fp)) {
+        if (r.point > best_point) {
+            best_point = r.point;
+        }
+    }
+    fclose(fp);
+}
+
+// 전체 기록 출력 (점수순 정렬)
 void print_result() {
     FILE *fp = fopen("records.dat", "rb");
     if (!fp) {
@@ -621,24 +636,40 @@ void print_result() {
         return;
     }
 
-    struct result r;
+    struct result records[100];
     int count = 0;
 
-    printf("\n--- 전체 기록 ---\n");
-    while (fread(&r, sizeof(r), 1, fp)) {
-        printf("이름: %s | 점수: %ld | 날짜: %04d-%02d-%02d %02d:%02d\n",
-               r.name, r.point, r.year, r.month, r.day, r.hour, r.min);
+    while (fread(&records[count], sizeof(struct result), 1, fp)) {
         count++;
     }
     fclose(fp);
+
+    // 점수 내림차순 정렬
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            if (records[i].point < records[j].point) {
+                struct result temp = records[i];
+                records[i] = records[j];
+                records[j] = temp;
+            }
+        }
+    }
+
+    printf("\n--- 전체 기록 ---\n");
+    for (int i = 0; i < count; i++) {
+        printf("점수: %ld | 이름: %s | 날짜: %04d-%02d-%02d %02d:%02d\n",
+               records[i].point, records[i].name, records[i].year,
+               records[i].month, records[i].day, records[i].hour, records[i].min);
+    }
 
     if (count == 0) {
         printf("기록이 없습니다.\n");
     }
 
     printf("\n아무 키나 누르세요...");
-    getchar(); getchar(); // flush + 대기
+    getchar(); getchar();
 }
+
 
 
 
@@ -649,7 +680,8 @@ void print_result() {
 int main(void)
 {
     set_input_mode(); // 터미널 설정
-
+	load_best_score();
+	
 	int menu = 1;
 
 	while(menu)
