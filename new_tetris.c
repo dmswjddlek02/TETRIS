@@ -16,6 +16,22 @@
 #endif
 #define CTIME 1
 
+volatile sig_atomic_t tick = 0; // 시그널에서 설정됨
+void signal_handler(int signo) {
+    if (signo == SIGALRM) {
+        tick = 1; // 낙하 플래그 설정
+    }
+}
+
+void set_timer() {
+    struct itimerval timer;
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 500000;  // 0.5초 주기
+    timer.it_value = timer.it_interval;
+    setitimer(ITIMER_REAL, &timer, NULL);
+}
+
+
 /* 왼쪽, 오른쪽, 아래, 회전  */
 #define LEFT 0
 #define RIGHT 1
@@ -374,116 +390,111 @@ int block_color(int block_type) {
 
 
 /*게임 실행 화면*/
-int game_start(void){
-    
+int game_start(void) {
     srand(time(NULL));
-	while(1){
-		int randum = rand() % 7 + 1;
-    char (*block)[4][4];
 
-    switch (randum) {
-        case I_BLOCK: block = i_block; break;
-        case T_BLOCK: block = t_block; break;
-        case S_BLOCK: block = s_block; break;
-        case Z_BLOCK: block = z_block; break;
-        case L_BLOCK: block = l_block; break;
-        case J_BLOCK: block = j_block; break;
-        case O_BLOCK: block = o_block; break;
-    }
+    while (1) {
+        int randum = rand() % 7 + 1;
+        char (*block)[4][4];
 
-	x = 4;
-	y = 1;
-	block_state = 0;
+        switch (randum) {
+            case I_BLOCK: block = i_block; break;
+            case T_BLOCK: block = t_block; break;
+            case S_BLOCK: block = s_block; break;
+            case Z_BLOCK: block = z_block; break;
+            case L_BLOCK: block = l_block; break;
+            case J_BLOCK: block = j_block; break;
+            case O_BLOCK: block = o_block; break;
+        }
 
-	// 블럭 생성 직후 충돌 → 게임 오버
-if (check_collision(block[block_state], x, y)) {
-    game_over();
-    return 0;
-}
+        x = 4;
+        y = 1;
+        block_state = 0;
 
+        if (check_collision(block[block_state], x, y)) {
+            game_over();
+            return 0;
+        }
 
-	while (1) {
+        tick = 0;
+        signal(SIGALRM, signal_handler);
+        set_timer();
 
-        if (key_pressed()) {
-	        char ch = read_key();
-	        if (ch == 'i' || ch == 'I') {
-		        int next_rotation = (block_state + 1) % 4;
-		        if (!check_collision(block[next_rotation], x, y)) {
-			        block_state = next_rotation;
-		        }
-	        }
-	    else if (ch == 'j' || ch == 'J') {
-		    if (!check_collision(block[block_state], x - 1, y)) {
-			    x--;
-		    }
-	    }
-	    else if (ch == 'l' || ch == 'L') {
-		    if (!check_collision(block[block_state], x + 1, y)) {
-			    x++;
-		    }
-	    }
-	    else if (ch == 'k' || ch == 'K') {
-		    if (!check_collision(block[block_state], x, y + 1)) {
-			    y++;
-		    }
-	    }
-	    else if (ch == 'a' || ch == 'A') {
-		    while (!check_collision(block[block_state], x, y + 1)) {
-			    y++;
-		    }
-	    }
-	    else if (ch == 'p' || ch == 'P') {
-		    printf("게임을 종료합니다.\n");
-		    exit(0);
-	    }
-    }
-
-		system("clear");
-
-		// 블럭 + 배경 출력
-for (int i = 0; i < 20; i++) {
-	for (int j = 0; j < 10; j++) {
-		int draw_value = tetris_table[i][j];  // 기본은 맵에 있는 값
-
-		// 현재 내려오고 있는 블럭이 있는 좌표라면 그 값으로 덮어쓰기
-		if (i >= y && i < y + 4 && j >= x && j < x + 4) {
-			int bval = block[block_state][i - y][j - x];
-			if (bval != 0) {
-				draw_value = bval;
-			}
-		}
-		draw_block(block_color(draw_value));
-	}
-	printf("\n");
-}
-
-		usleep(500000); // 0.5초마다 낙하
-
-		// 아래로 한 칸 내릴 수 있는지 확인
-		if (check_collision(block[block_state], x, y + 1)) {
-    // 💥 충돌했으면 지금 위치에 고정하고 break!
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (block[block_state][i][j] != 0) {
-                int py = y + i;
-                int px = x + j;
-                if (py >= 0 && py < 20 && px >= 0 && px < 10) {
-                    tetris_table[py][px] = block[block_state][i][j];
+        while (1) {
+            if (key_pressed()) {
+                char ch = read_key();
+                if (ch == 'i' || ch == 'I') {
+                    int next_rotation = (block_state + 1) % 4;
+                    if (!check_collision(block[next_rotation], x, y)) {
+                        block_state = next_rotation;
+                    }
+                } else if (ch == 'j' || ch == 'J') {
+                    if (!check_collision(block[block_state], x - 1, y)) {
+                        x--;
+                    }
+                } else if (ch == 'l' || ch == 'L') {
+                    if (!check_collision(block[block_state], x + 1, y)) {
+                        x++;
+                    }
+                } else if (ch == 'k' || ch == 'K') {
+                    if (!check_collision(block[block_state], x, y + 1)) {
+                        y++;
+                    }
+                } else if (ch == 'a' || ch == 'A') {
+                    while (!check_collision(block[block_state], x, y + 1)) {
+                        y++;
+                    }
+                } else if (ch == 'p' || ch == 'P') {
+                    printf("게임을 종료합니다.\n");
+                    reset_input_mode(); // 터미널 복원
+                    exit(0);
                 }
             }
+
+            // 자동 낙하
+            if (tick) {
+                tick = 0;
+                if (check_collision(block[block_state], x, y + 1)) {
+                    for (int i = 0; i < 4; i++) {
+                        for (int j = 0; j < 4; j++) {
+                            if (block[block_state][i][j] != 0) {
+                                int py = y + i;
+                                int px = x + j;
+                                if (py >= 0 && py < 20 && px >= 0 && px < 10) {
+                                    tetris_table[py][px] = block[block_state][i][j];
+                                }
+                            }
+                        }
+                    }
+                    clear_lines();
+                    break;
+                }
+                y++;
+            }
+
+            // 화면 출력
+            system("clear");
+            for (int i = 0; i < 20; i++) {
+                for (int j = 0; j < 10; j++) {
+                    int draw_value = tetris_table[i][j];
+                    if (i >= y && i < y + 4 && j >= x && j < x + 4) {
+                        int bval = block[block_state][i - y][j - x];
+                        if (bval != 0) {
+                            draw_value = bval;
+                        }
+                    }
+                    draw_block(block_color(draw_value));
+                }
+                printf("\n");
+            }
+
+            usleep(10000); // CPU 점유 줄이기 (입력 polling은 빠르게)
         }
     }
 
-	clear_lines();
-    break;
+    return 0;
 }
 
-y++; // 충돌 안 했을 때만 한 칸 내림
-	}
-	}
-	
-	return 0;
-}
 
 //이름 기록 검색
 void search_result() {
