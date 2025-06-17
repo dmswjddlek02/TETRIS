@@ -485,7 +485,10 @@ int game_start(void) {
 
             // 화면 출력
             system("clear");
+			draw_block(30);
+			printf("\n");
             for (int i = 0; i < 20; i++) {
+				draw_block(30);
                 for (int j = 0; j < 10; j++) {
                     int draw_value = tetris_table[i][j];
                     if (i >= y && i < y + 4 && j >= x && j < x + 4) {
