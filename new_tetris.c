@@ -488,7 +488,6 @@ int game_start(void) {
             system("clear");
             draw_block(30);
             printf("\n");
-            printf("                              [NEXT BLOCK]\n");
 
             for (int i = 0; i < 20; i++) {
                 draw_block(30);
@@ -501,11 +500,14 @@ int game_start(void) {
                             if (bval != 0) draw_value = bval;
                         }
                         draw_block(block_color(draw_value));
-                    } else if (j >= 10 && j < 13) {
+                    } else if (j >= 10 && j < 12) {
                         draw_block(30);
-                    } else if (i >= 3 && i < 10 && j >= 13 && j < 19) {
-                        int box_i = i - 3;
-                        int box_j = j - 13;
+                    } else if (i == 1 && j == 12) {
+                        printf("[NEXT BLOCK]");
+                        j += 11;
+                    } else if (i >= 2 && i < 9 && j >= 12 && j < 18) {
+                        int box_i = i - 2;
+                        int box_j = j - 12;
                         if (box_i == 0 || box_i == 6 || box_j == 0 || box_j == 5) {
                             draw_block(37);
                         } else {
@@ -556,6 +558,7 @@ int game_start(void) {
     }
     return 0;
 }
+
 
 
 
