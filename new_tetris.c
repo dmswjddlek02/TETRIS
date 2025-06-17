@@ -387,11 +387,22 @@ int block_color(int block_type) {
     }
 }
 
+void reset_tetris_table() {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 10; j++) {
+            if (i == 0 || i == 19 || j == 0 || j == 9)
+                tetris_table[i][j] = 8;  // 벽
+            else
+                tetris_table[i][j] = 0;  // 빈 공간
+        }
+    }
+}
 
 
 /*게임 실행 화면*/
 int game_start(void) {
     srand(time(NULL));
+	reset_tetris_table();
 
     while (1) {
         int randum = rand() % 7 + 1;
