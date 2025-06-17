@@ -301,6 +301,11 @@ void game_over() {
     // 점수 저장
     temp_result.point = point;
 
+	// 최고 점수 갱신
+	if (point > best_point) {
+    	best_point = point;
+	}
+
     // 시간 저장
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
@@ -403,6 +408,7 @@ void reset_tetris_table() {
 int game_start(void) {
     srand(time(NULL));
     reset_tetris_table();
+	point = 0;
 
     next_block_number = rand() % 7 + 1;
 
